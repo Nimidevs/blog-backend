@@ -4,17 +4,34 @@ const Post = require("../models/post");
 const Category = require("../models/category");
 
 exports.allPostsGet = asyncHandler(async (req, res, next) => {
-  const posts = await Post.find({ published: true }).exec();
-  res.status(200).json({ success: true, posts: posts });
+  try {
+    const posts = await Post.find({ published: true }).exec();
+    if (posts.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No posts found" });
+    }
+    res.status(200).json({ success: true, posts: posts });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "An error occured while fetching posts",
+      });
+  }
 });
 exports.postGet = asyncHandler(async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findOne({
+      _id: req.params.id,
+      published: true,
+    });
     if (post) {
       // Update the visit count
       const updatedPost = await Post.findOneAndUpdate(
         { _id: post._id },
-        { $inc: { visit_count: 1 }, $push: { viewTimestamps: new Date() } },
+        { $inc: { visit_count: 1 }, $push: { viewTimeStamps: new Date() } },
         { new: true }
       );
       return res.status(200).json({ success: true, post: updatedPost });
@@ -24,14 +41,14 @@ exports.postGet = asyncHandler(async (req, res, next) => {
         .json({ success: false, message: "Couldnt find post" });
     }
   } catch (error) {
-    res.status(500).json({ error: "An error occurred while fetching posts" });
+    res.status(500).json({ error: "An error occurred while fetching post" });
   }
 });
 
 exports.trendingPostsGet = asyncHandler(async (req, res, next) => {
   try {
     // Fetch trending posts, sorted by score in descending order and limit to top 10
-    const trendingPosts = await Post.find()
+    const trendingPosts = await Post.find({ published: true })
       .sort({ trending_score: -1 })
       .limit(10);
 
