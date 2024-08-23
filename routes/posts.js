@@ -11,6 +11,7 @@ router.get("/editors-pick", post_controller.editorsPicksGet);
 router.get("/featured", post_controller.featuredPostsGet);
 router.get("/recentposts", post_controller.RecentPostsGet);
 router.get("/search", post_controller.searchPostsGet);
+router.get("/trending", post_controller.trendingPostsGet);
 router.get(
   "/:id",
   passport.authenticate("jwt", { session: false }),
