@@ -44,13 +44,14 @@ exports.log_in_post = [
         );
         if (match) {
           const tokenObject = util.issueJWT(existingUser);
-          console.log(tokenObject)
+          console.log(tokenObject);
+          req.user = existingUser;
           return res.status(200).json({
             success: true,
             user: existingUser,
             token: tokenObject.token,
             expiresIn: tokenObject.expires,
-            message: "Logged in successfully"
+            message: "Logged in successfully",
           });
         } else {
           return res
@@ -58,7 +59,7 @@ exports.log_in_post = [
             .json({ success: false, message: "Incorrect Password" });
         }
       } catch (error) {
-        console.log("This is from log in controller", error)
+        console.log("This is from log in controller", error);
         const errorDetails = {
           message: error.message,
           stack: error.stack,
@@ -66,7 +67,11 @@ exports.log_in_post = [
         };
         res
           .status(500)
-          .json({ success: false, message: "Log in failed try again later", errors: errorDetails.message });
+          .json({
+            success: false,
+            message: "Log in failed try again later",
+            errors: errorDetails.message,
+          });
         next(error);
       }
     }

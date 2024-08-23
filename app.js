@@ -2,6 +2,7 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const scheduledFunction = require("./lib/scheduled");
 
 const indexRouter = require("./routes");
 // var usersRouter = require("./routes/users");
@@ -22,6 +23,8 @@ main().catch((err) => console.log(err));
 async function main() {
   await mongoose.connect(mongoDB);
 }
+
+scheduledFunction();
 
 app.use(logger("dev"));
 app.use(express.json());

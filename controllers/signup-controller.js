@@ -44,12 +44,14 @@ exports.sign_up_post = [
             .status(409)
             .json({ message: "A user with this username exists" });
         }
+        const role = 'reader'
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const newUser = new User({
           first_name: req.body.firstname,
           last_name: req.body.lastname,
           username: req.body.username,
           password: hashedPassword,
+          role: role
         });
         await newUser.save();
         return res
