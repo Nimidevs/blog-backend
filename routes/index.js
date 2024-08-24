@@ -8,6 +8,7 @@ const User = require("../models/user");
 
 const authRoutes = require("./auth");
 const postsRoutes = require('./posts')
+const categoriesRoutes = require('./category')
 const passport = require("passport");
 
 const pathToKey = path.join(__dirname, "..", "id_rsa_pub.pem");
@@ -19,6 +20,7 @@ const PUB_KEY = fs.readFileSync(pathToKey, "utf8");
 // });
 router.use("/auth", authRoutes);
 router.use('/posts', postsRoutes)
+router.use('/categories', categoriesRoutes)
 // router.get(
 //   "/protected",
 //   passport.authenticate("jwt", { session: false }),

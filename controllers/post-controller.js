@@ -13,12 +13,10 @@ exports.allPostsGet = asyncHandler(async (req, res, next) => {
     }
     res.status(200).json({ success: true, posts: posts });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "An error occured while fetching posts",
-      });
+    res.status(500).json({
+      success: false,
+      message: "An error occured while fetching posts",
+    });
   }
 });
 exports.postGet = asyncHandler(async (req, res, next) => {
