@@ -29,6 +29,8 @@ router.patch(
   passport.authenticate("jwt", { session: false }),
   post_controller.unLikeUpdatesPatch
 );
+
+
 //Route to Create and Delete posts only available to posts authors (i.e Writers/Authors frontend)
 //Change the authentication middleware to check for Writers instead.
 
@@ -69,10 +71,11 @@ router.patch(
   post_controller.unPublishPostPatch
 );
 
-//Route to get all posts by a particular author, Going to be used on both readers frontend and Writers frontend.
+//Route to get all posts by a particular author, Going to be used on Writers frontend.
 router.get(
   "/author/:authorId",
   passport.authenticate("jwt", { session: false }),
+  authenticateMiddleWare.authenticateUserAndVerifyRole,
   post_controller.allAuthorsPostsGet
 );
 

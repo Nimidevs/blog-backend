@@ -16,7 +16,7 @@ exports.log_in_post = [
     .trim()
     .isLength({ min: 8, max: 20 })
     .withMessage("password must be between 8 and 20 ")
-    .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/, "i")
+    .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/)
     .withMessage(
       "Password should be combination of one uppercase , one lower case, one special char, one digit and min 8 , max 20 char long"
     )
@@ -25,18 +25,28 @@ exports.log_in_post = [
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      const reducedErrors = errors.array().reduce((acc, err) => {
+        // If accumulator already has one error, skip further processing
+        if (Object.keys(acc).length === 0) {
+          acc["path"] = err.path;
+          acc["message"] = err.msg;
+        }
+        return acc;
+      }, {});
       return res
         .status(400)
-        .json({ success: false, user: req.body, errors: errors.array() });
+        .json({ success: false, user: req.body, errors: reducedErrors });
     } else {
       try {
         const existingUser = await User.findOne({
           username: req.body.username,
         });
         if (!existingUser) {
-          return res
-            .status(401)
-            .json({ success: false, message: "Incorrect Username" });
+          return res.status(401).json({
+            success: false,
+            message: "Incorrect Username",
+            errors: { path: "username", message: "Incorrect Username" },
+          });
         }
         const match = await bcrypt.compare(
           req.body.password,
@@ -44,7 +54,6 @@ exports.log_in_post = [
         );
         if (match) {
           const tokenObject = util.issueJWT(existingUser);
-          console.log(tokenObject);
           req.user = existingUser;
           return res.status(200).json({
             success: true,
@@ -54,9 +63,11 @@ exports.log_in_post = [
             message: "Logged in successfully",
           });
         } else {
-          return res
-            .status(401)
-            .json({ success: false, message: "Incorrect Password" });
+          return res.status(401).json({
+            success: false,
+            message: "Incorrect Password",
+            errors: { path:"password", message: "Incorrect Password" },
+          });
         }
       } catch (error) {
         console.log("This is from log in controller", error);
@@ -65,13 +76,11 @@ exports.log_in_post = [
           stack: error.stack,
           name: error.name,
         };
-        res
-          .status(500)
-          .json({
-            success: false,
-            message: "Log in failed try again later",
-            errors: errorDetails.message,
-          });
+        res.status(500).json({
+          success: false,
+          message: "Log in failed try again later",
+          errors: { message: errorDetails.message },
+        });
         next(error);
       }
     }
