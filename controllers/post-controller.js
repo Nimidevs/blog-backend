@@ -2,6 +2,13 @@ const asyncHandler = require("express-async-handler");
 const { body, validationResult, Result } = require("express-validator");
 const Post = require("../models/post");
 const Category = require("../models/category");
+const {
+  imageUploadFunction,
+  imageUploadFunctionModifiedToUseBuffers,
+} = require("../cloudinary.config");
+const multer = require("multer");
+
+const storage = multer.memoryStorage();
 
 exports.allPostsGet = asyncHandler(async (req, res, next) => {
   try {
@@ -19,6 +26,7 @@ exports.allPostsGet = asyncHandler(async (req, res, next) => {
     });
   }
 });
+
 exports.postGet = asyncHandler(async (req, res, next) => {
   try {
     const post = await Post.findOne({
@@ -77,11 +85,12 @@ exports.trendingPostsGet = asyncHandler(async (req, res, next) => {
 });
 
 exports.searchPostsGet = asyncHandler(async (req, res, next) => {
+  /**NOTE: There's still a lof of work to be done on this, not all the filters work e.g category it sees it as string at least thats what i think... mental note for when i get back to it */
   try {
     const { query, category, author, tags, fromDate, toDate } = req.query;
 
     // Initialize an empty filter object
-    let filters = { published: true };
+    let filters = {};
 
     // Add filters conditionally based on user input
     if (query) {
@@ -110,7 +119,7 @@ exports.searchPostsGet = asyncHandler(async (req, res, next) => {
       }
     }
     const posts = await Post.find(filters);
-    if (!posts) {
+    if (!posts || posts.length < 1) {
       return res
         .status(404)
         .json({ success: false, message: "couldnt find post" });
@@ -260,21 +269,44 @@ exports.unLikeUpdatesPatch = asyncHandler(async (req, res, next) => {
 
 exports.createPostPost = [
   (req, res, next) => {
+    console.log('first look at req: ', req.body)
     if (!Array.isArray(req.body.categories)) {
       req.body.categories =
         typeof req.body.categories === "undefined" ? [] : [req.body.categories];
     }
     next();
   },
-  body("title").notEmpty().withMessage("Title is required").trim().escape(),
+  body("title").notEmpty().withMessage("Title is required").trim(), // Removed escape() validator from some as it was converting some characters to valid html to prevent xss attacks
+  body("post").notEmpty().withMessage("Post is required").trim(),
+  body("title_preview")
+    .notEmpty()
+    .withMessage("title preview is required")
+    .trim()
+    .escape(),
+  body("subtitle_preview")
+    .notEmpty()
+    .withMessage("subtitle preview is required")
+    .trim()
+    .escape(),
+  body("title_text")
+    .notEmpty()
+    .withMessage("title text is required")
+    .trim()
+    .escape(),
   body("post_text")
     .notEmpty()
     .withMessage("Post text is required")
     .trim()
     .escape(),
+  body("image_preview")
+    .optional() // Makes the field optional
+    .isString()
+    .withMessage("Image preview must be a string")
+    .trim(),
   body("categories").isArray().withMessage("Categories must be an array"),
   body("categories.*").escape(),
   asyncHandler(async (req, res, next) => {
+    console.log('second look at req: ', req.body)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, error: errors.array() });
@@ -289,7 +321,12 @@ exports.createPostPost = [
       }
       const newPost = new Post({
         title: req.body.title,
+        post: req.body.post,
+        title_preview: req.body.title_preview,
+        subtitle_preview: req.body.subtitle_preview,
+        title_text: req.body.title_text,
         post_text: req.body.post_text,
+        image_preview: req.body.image_preview || null,
         created_at: Date.now(),
         author: req.user._id,
         categories: req.body.categories,
@@ -375,12 +412,33 @@ exports.updatePostPost = [
     next();
   },
 
-  body("title").notEmpty().withMessage("Title is required").trim().escape(),
+  body("title").notEmpty().withMessage("Title is required").trim(),
+  body("post").notEmpty().withMessage("Post is required").trim(),
+  body("title_preview")
+    .notEmpty()
+    .withMessage("title preview is required")
+    .trim()
+    .escape(),
+  body("subtitle_preview")
+    .notEmpty()
+    .withMessage("subtitle preview is required")
+    .trim()
+    .escape(),
+  body("title_text")
+    .notEmpty()
+    .withMessage("title text is required")
+    .trim()
+    .escape(),
   body("post_text")
     .notEmpty()
     .withMessage("Post text is required")
     .trim()
     .escape(),
+  body("image_preview")
+    .optional() // Makes the field optional
+    .isString()
+    .withMessage("Image preview must be a string")
+    .trim(),
   body("categories").isArray().withMessage("Categories must be an array"),
   body("categories.*").escape(),
 
@@ -396,7 +454,12 @@ exports.updatePostPost = [
         {
           $set: {
             title: req.body.title,
+            post: req.body.post,
+            title_preview: req.body.title_preview,
+            subtitle_preview: req.body.subtitle_preview,
+            title_text: req.body.title_text,
             post_text: req.body.post_text,
+            image_preview: req.body.image_preview || null,
             categories: req.body.categories,
             updated_at: Date.now(),
           },
@@ -444,7 +507,7 @@ exports.updatePostPost = [
 exports.allAuthorsPostsGet = asyncHandler(async (req, res, next) => {
   try {
     const posts = await Post.find({ author: req.user._id });
-    if (!posts || posts.length <= 0) {
+    if (!posts) {
       res.status(404).json({ success: false, message: "No posts Found" });
     }
     res.status(200).json({ success: true, posts: posts });
@@ -511,3 +574,41 @@ exports.unPublishPostPatch = asyncHandler(async (req, res, next) => {
     });
   }
 });
+
+const upload = multer({ storage: storage });
+
+exports.uploadImagesToCloudinary = [
+  upload.single("image"),
+
+  asyncHandler(async (req, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const result = await imageUploadFunctionModifiedToUseBuffers(
+        req.file.buffer
+      );
+
+      if (result.secure_url) {
+        return res.status(200).json({
+          status: 200,
+          success: true,
+          message: "image uploaded successfully",
+          image_url: result.secure_url,
+        });
+      }
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: result.message,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        status: 500,
+        message: error.message,
+      });
+    }
+  }),
+];

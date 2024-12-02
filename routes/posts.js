@@ -79,4 +79,12 @@ router.get(
   post_controller.allAuthorsPostsGet
 );
 
+// Route to upload images to cloudinary from quill image handler, done to prevent quill from saving images Base64 encoding directly
+router.post(
+  "/image/upload",
+  passport.authenticate("jwt", { session: false }),
+  authenticateMiddleWare.authenticateUserAndVerifyRole,
+  post_controller.uploadImagesToCloudinary
+)
+
 module.exports = router;

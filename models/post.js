@@ -2,8 +2,19 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const PostSchema = new Schema({
-  title: { type: String, required: true },
-  post_text: { type: String, required: true },
+  title: {
+    type: String,
+    required: true,
+  } /**This saves delta sue to the editor i'm using */,
+  post: { type: String, required: true },
+  title_preview: { type: String, required: true },
+  subtitle_preview: { type: String, required: true },
+  post_text: {
+    type: String,
+    required: true,
+  } /**This saves text/String version of post so this is indexed for searches */,
+  image_preview: { type: String, default: null },
+  title_text: { type: String, required: true },
   created_at: { type: Date, default: Date.now },
   author: { type: Schema.Types.ObjectId, ref: "User", required: true },
   categories: [
@@ -19,7 +30,10 @@ const PostSchema = new Schema({
   updated_at: { type: Date, default: Date.now },
 });
 
-PostSchema.index({ title: "text", post_text: "text" });
+PostSchema.index({
+  title_text: "text",
+  post_text: "text",
+}); /**NOTE: we might need to convert this to a search index instead as text indexes slow down database operations so we do more research */
 PostSchema.index({ author: 1 });
 PostSchema.index({ categories: 1 });
 PostSchema.index({ viewTimeStamps: 1 });
@@ -28,19 +42,19 @@ PostSchema.index({ trending_score: 1 });
 PostSchema.index({ published: 1 });
 PostSchema.index({ featured: 1 });
 
-
 //Chat gpt helped.. Barely know whats going on here
 PostSchema.methods.calculateTrendingScore = async function (timeframeInHours) {
   const now = Date.now(); // Current timestamp in milliseconds
   const lambda = 0.001; // Decay rate for view timestamps
   let decayedViews = 0;
-  
+
   // Calculate the cutoff time based on the provided timeframe
   const cutoffTime = now - timeframeInHours * 1000 * 60 * 60; // Timeframe in milliseconds
 
   // Aggregate views within the specified timeframe, applying decay to each view
   this.viewTimeStamps.forEach((timestamp) => {
-    if (timestamp >= cutoffTime) { // Only consider timestamps within the timeframe
+    if (timestamp >= cutoffTime) {
+      // Only consider timestamps within the timeframe
       const timeDifference = (now - timestamp) / (1000 * 60 * 60); // Convert difference to hours
       decayedViews += Math.exp(-lambda * timeDifference); // Apply exponential decay to views
     }
