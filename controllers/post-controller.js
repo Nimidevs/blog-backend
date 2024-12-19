@@ -13,7 +13,7 @@ const storage = multer.memoryStorage();
 exports.allPostsGet = asyncHandler(async (req, res, next) => {
   try {
     const posts = await Post.find({ published: true }).exec();
-    if (posts.length === 0) {
+    if (!posts) {
       return res
         .status(404)
         .json({ success: false, message: "No posts found" });
@@ -137,15 +137,32 @@ const ResultCache = new Map();
 exports.RecentPostsGet = asyncHandler(async (req, res, next) => {
   try {
     const { page, limit } = req.query;
-    const pageNumber = Number(page);
-    const pageLimit = Number(limit);
+    let pageNumber = Number(page);
+    let pageLimit = Number(limit);
 
-    const cacheKey = `recent_posts_${page}_${limit}`;
+    let totalPublishedPosts = await Post.countDocuments({ published: true });
+    let totalNumberOfPages = Math.ceil(totalPublishedPosts / pageLimit);
+    
+    if (pageNumber > totalNumberOfPages) {
+      pageNumber = totalNumberOfPages;
+    } else if (pageNumber < 1) {
+      pageNumber = 1;
+    }
+
+    const cacheKey = `recent_posts_${pageNumber}_${pageLimit}`;
 
     if (ResultCache.has(cacheKey)) {
-      return res
-        .status(200)
-        .json({ success: true, posts: ResultCache.get(cacheKey) });
+      return res.status(200).json({
+        success: true,
+        posts: ResultCache.get(cacheKey),
+        pagination: {
+          totalPosts: totalPublishedPosts,
+          currentPage: pageNumber,
+          totalPages: totalNumberOfPages,
+          postsPerPage: pageLimit,
+        },
+        message: "cached response",
+      });
     }
     // this paginates the result sending only pageLimit number of results each time sorted by the earliest, depending on the current page, it skips a number of  documents
     const posts = await Post.find({ published: true })
@@ -157,7 +174,16 @@ exports.RecentPostsGet = asyncHandler(async (req, res, next) => {
       res.status(400).json({ success: false, message: "No posts found" });
     }
     ResultCache.set(cacheKey, posts);
-    res.status(200).json({ success: true, posts: posts });
+    res.status(200).json({
+      success: true,
+      posts: posts,
+      pagination: {
+        totalPosts: totalPublishedPosts,
+        currentPage: pageNumber,
+        totalPages: totalNumberOfPages,
+        postsPerPage: pageLimit,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -210,14 +236,14 @@ exports.featuredPostsGet = asyncHandler(async (req, res, next) => {
       published: true,
       featured: true,
     });
-    if (featuredPosts.length > 0) {
-      res.status(200).json({ success: true, posts: featuredPosts });
-    } else if (!featuredPosts || featuredPosts.length === 0) {
-      res.status(404).json({
+
+    if (!featuredPosts) {
+      return res.status(404).json({
         success: false,
         message: "There are no featuredPosts",
       });
     }
+    res.status(200).json({ success: true, posts: featuredPosts });
   } catch (error) {
     res.status(500).json({ error: "An error occurred while fetching posts" });
     next(error);
@@ -269,7 +295,7 @@ exports.unLikeUpdatesPatch = asyncHandler(async (req, res, next) => {
 
 exports.createPostPost = [
   (req, res, next) => {
-    console.log('first look at req: ', req.body)
+    console.log("first look at req: ", req.body);
     if (!Array.isArray(req.body.categories)) {
       req.body.categories =
         typeof req.body.categories === "undefined" ? [] : [req.body.categories];
@@ -306,7 +332,7 @@ exports.createPostPost = [
   body("categories").isArray().withMessage("Categories must be an array"),
   body("categories.*").escape(),
   asyncHandler(async (req, res, next) => {
-    console.log('second look at req: ', req.body)
+    console.log("second look at req: ", req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, error: errors.array() });
