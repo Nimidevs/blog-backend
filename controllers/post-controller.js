@@ -55,6 +55,10 @@ exports.trendingPostsGet = asyncHandler(async (req, res, next) => {
   try {
     // Fetch trending posts, sorted by score in descending order and limit to top 10
     const trendingPosts = await Post.find({ published: true })
+      .populate([
+        { path: "author", select: "first_name last_name" },
+        { path: "categories", select: "name" },
+      ])
       .sort({ trending_score: -1 })
       .limit(10);
 
@@ -142,7 +146,7 @@ exports.RecentPostsGet = asyncHandler(async (req, res, next) => {
 
     let totalPublishedPosts = await Post.countDocuments({ published: true });
     let totalNumberOfPages = Math.ceil(totalPublishedPosts / pageLimit);
-    
+
     if (pageNumber > totalNumberOfPages) {
       pageNumber = totalNumberOfPages;
     } else if (pageNumber < 1) {
@@ -168,7 +172,11 @@ exports.RecentPostsGet = asyncHandler(async (req, res, next) => {
     const posts = await Post.find({ published: true })
       .sort({ created_at: -1 })
       .skip((pageNumber - 1) * pageLimit)
-      .limit(pageLimit);
+      .limit(pageLimit)
+      .populate([
+        { path: "author", select: "first_name last_name" },
+        { path: "categories", select: "name" },
+      ]);
 
     if (!posts) {
       res.status(400).json({ success: false, message: "No posts found" });
@@ -235,7 +243,10 @@ exports.featuredPostsGet = asyncHandler(async (req, res, next) => {
     const featuredPosts = await Post.find({
       published: true,
       featured: true,
-    });
+    }).populate([
+      { path: "author", select: "first_name last_name" },
+      { path: "categories", select: "name" },
+    ]);
 
     if (!featuredPosts) {
       return res.status(404).json({
