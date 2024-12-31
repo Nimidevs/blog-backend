@@ -34,7 +34,7 @@ exports.categoryPostsGet = asyncHandler(async (req, res, next) => {
       categories: req.params.id,
       published: true,
     });
-    if (!posts || posts.length === 0) {
+    if (!posts) {
       return res
         .status(404)
         .json({ success: false, message: "No posts found for this category" });

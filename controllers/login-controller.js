@@ -55,6 +55,14 @@ exports.log_in_post = [
         if (match) {
           const tokenObject = util.issueJWT(existingUser);
           req.user = existingUser;
+          const token = tokenObject.token.split(' ')[1]
+          console.log(token)
+          res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "None",
+            path: "/",
+          });
           return res.status(200).json({
             success: true,
             user: existingUser,
@@ -66,7 +74,7 @@ exports.log_in_post = [
           return res.status(401).json({
             success: false,
             message: "Incorrect Password",
-            errors: { path:"password", message: "Incorrect Password" },
+            errors: { path: "password", message: "Incorrect Password" },
           });
         }
       } catch (error) {

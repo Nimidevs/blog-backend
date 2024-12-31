@@ -39,7 +39,10 @@ exports.postGet = asyncHandler(async (req, res, next) => {
         { _id: post._id },
         { $inc: { visit_count: 1 }, $push: { viewTimeStamps: new Date() } },
         { new: true }
-      );
+      ).populate([
+        { path: "author", select: "first_name last_name" },
+        { path: "categories", select: "name" },
+      ]);
       return res.status(200).json({ success: true, post: updatedPost });
     } else {
       return res
