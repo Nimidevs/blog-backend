@@ -207,16 +207,18 @@ exports.categoriesPostsGet = asyncHandler(async (req, res, next) => {
   try {
     const posts = await Post.find({
       published: true,
-      categories: req.params.categoryName,
-    }).exec();
-    if (posts.length > 0) {
-      res.status(200).json({ success: true, posts: posts });
-    } else if (!posts || posts.length === 0) {
-      res.status(404).json({
+      categories: req.params.categoryId,
+    }).populate([
+      { path: "author", select: "first_name last_name" },
+      { path: "categories", select: "name" },
+    ]).exec();
+    if (!posts) {
+      return res.status(404).json({
         success: false,
         message: "There are no posts in this category",
       });
     }
+    res.status(200).json({ success: true, posts: posts });
   } catch (error) {
     res.status(500).json({ error: "An error occurred while fetching posts" });
   }

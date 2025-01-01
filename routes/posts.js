@@ -6,7 +6,7 @@ const authenticateMiddleWare = require("../middleware/authentication");
 const post_controller = require("../controllers/post-controller");
 
 router.get("/", post_controller.allPostsGet);
-router.get("/category/:categoryName", post_controller.categoriesPostsGet);
+router.get("/category/:categoryId", post_controller.categoriesPostsGet);
 router.get("/editors-pick", post_controller.editorsPicksGet);
 router.get("/featured", post_controller.featuredPostsGet);
 router.get("/recentposts", post_controller.RecentPostsGet);
