@@ -40,16 +40,14 @@ Cloudinary	Image Uploads (if used)
 Postman	API Testing
 💻 Installation & Running Locally
 1️⃣ Clone the Repository
-bash
-Copy
-Edit
+```sh
 git clone https://github.com/yourusername/blog-backend.git
 cd blog-backend
+```
 2️⃣ Install Dependencies
-bash
-Copy
-Edit
+```sh
 npm install
+```
 3️⃣ Setup Environment Variables
 Create a .env file in the root directory and add the required environment variables:
 
@@ -60,28 +58,31 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 CLOUDINARY_API_KEY=your_cloudinary_key  # If using Cloudinary
 4️⃣ Start the Server
-bash
-Copy
-Edit
+```sh
 npm run serverstart
+```
 The backend will run on http://localhost:8080/ by default.
 
 📡 API Endpoints
 Auth Routes
-Method	Endpoint	Description
-POST	/api/auth/signup	Register a new user
-POST	/api/auth/login	Login and get token
+| Method | Endpoint | Description |
+|--------|----------|------------|
+|POST |	/api/auth/signup|	Register a new user|
+POST|	/api/auth/login|	Login and get token
 Post Routes
-Method	Endpoint	Description
-POST	/api/posts	Create a new post (Authenticated)
-GET	/api/posts	Fetch all posts
-GET	/api/posts/:id	Get post by ID
-PUT	/api/posts/:id	Update a post (Author/Admin)
-DELETE	/api/posts/:id	Delete a post (Admin)
+| Method | Endpoint | Description |
+|--------|----------|------------|
+POST	|/api/posts|	Create a new post (Authenticated)
+GET|	/api/posts|	Fetch all posts
+GET|	/api/posts/:id|	Get post by ID
+PUT|	/api/posts/:id|	Update a post (Author/Admin)
+DELETE|	/api/posts/:id|	Delete a post (Admin)
 Category & Tag Routes
-Method	Endpoint	Description
-GET	/api/categories	Fetch all predefined categories
-POST	/api/tags	Create a new tag
+
+| Method | Endpoint | Description |
+|--------|----------|------------|
+GET	| /api/categories|	Fetch all predefined categories
+POST |	/api/tags|	Create a new tag
 🚀 Future Improvements
 🔹 Implement real-time comments using WebSockets
 🔹 Add pagination for posts to improve performance
