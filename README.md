@@ -83,6 +83,8 @@ Category & Tag Routes
 |--------|----------|------------|
 GET	| /api/categories|	Fetch all predefined categories
 POST |	/api/tags|	Create a new tag
+
+##
 🚀 Future Improvements
 🔹 Implement real-time comments using WebSockets
 🔹 Add pagination for posts to improve performance
