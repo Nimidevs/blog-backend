@@ -63,7 +63,7 @@ CLOUDINARY_API_KEY=your_cloudinary_key  # If using Cloudinary
 bash
 Copy
 Edit
-npm start
+npm run serverstart
 The backend will run on http://localhost:8080/ by default.
 
 📡 API Endpoints
