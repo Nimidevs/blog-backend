@@ -1,10 +1,10 @@
-Blog API Backend
+#Blog API Backend
 A RESTful API for a university student blog platform, enabling users to create, edit, and manage posts with categories, tags, authentication, and real-time engagement tracking.
 
-🚀 Features
+#🚀 Features
 ✅ User Authentication & Roles
 
-JWT-based authentication (Login, Signup)
+#JWT-based authentication (Login, Signup)
 Role-based access control (Admin, Writers, Readers)
 ✅ Post Management
 
@@ -39,25 +39,27 @@ Quill.js	Inline Text Editing (Frontend Integration)
 Cloudinary	Image Uploads (if used)
 Postman	API Testing
 💻 Installation & Running Locally
-1️⃣ Clone the Repository
+#1️⃣ Clone the Repository
 ```sh
 git clone https://github.com/yourusername/blog-backend.git
 cd blog-backend
 ```
-2️⃣ Install Dependencies
+#2️⃣ Install Dependencies
 ```sh
 npm install
 ```
-3️⃣ Setup Environment Variables
+#3️⃣ Setup Environment Variables
 Create a .env file in the root directory and add the required environment variables:
 
 env
-Copy
-Edit
+
+```sh
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 CLOUDINARY_API_KEY=your_cloudinary_key  # If using Cloudinary
-4️⃣ Start the Server
+#4️⃣ Start the Server
+```
+
 ```sh
 npm run serverstart
 ```
@@ -85,12 +87,12 @@ GET	| /api/categories|	Fetch all predefined categories
 POST |	/api/tags|	Create a new tag
 
 ##
-🚀 Future Improvements
+#🚀 Future Improvements
 🔹 Implement real-time comments using WebSockets
 🔹 Add pagination for posts to improve performance
 🔹 Optimize trending post algorithm for better accuracy
 
-👨‍💻 Contributing
+#👨‍💻 Contributing
 Fork the repository
 Create a new branch (git checkout -b feature-name)
 Make your changes and commit (git commit -m "Added feature XYZ")
