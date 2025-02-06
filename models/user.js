@@ -13,6 +13,12 @@ const UserSchema = new Schema({
     enum: ["reader", "writer"],
     default: "reader",
   },
+  bio: { type: String },
+  socialMedia: {
+    type: Map,
+    of: String,
+  },
+  authors_image: { type: String },
 });
 
 module.exports = mongoose.model("User", UserSchema);

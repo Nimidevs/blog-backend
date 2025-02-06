@@ -12,6 +12,7 @@ router.get("/featured", post_controller.featuredPostsGet);
 router.get("/recentposts", post_controller.RecentPostsGet);
 router.get("/search", post_controller.searchPostsGet);
 router.get("/trending", post_controller.trendingPostsGet);
+router.get("/writer/:writerId", post_controller.ReadersAllAuthorsPostsGet);
 router.get(
   "/:id",
   passport.authenticate("jwt", { session: false }),
@@ -29,7 +30,6 @@ router.patch(
   passport.authenticate("jwt", { session: false }),
   post_controller.unLikeUpdatesPatch
 );
-
 
 //Route to Create and Delete posts only available to posts authors (i.e Writers/Authors frontend)
 //Change the authentication middleware to check for Writers instead.
@@ -85,6 +85,6 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   authenticateMiddleWare.authenticateUserAndVerifyRole,
   post_controller.uploadImagesToCloudinary
-)
+);
 
 module.exports = router;

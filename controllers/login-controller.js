@@ -3,8 +3,11 @@ const { body, validationResult } = require("express-validator");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const util = require("../lib/utils");
+const multer  = require('multer')
+const upload = multer()
 
 exports.log_in_post = [
+  upload.none(),
   body("username")
     .trim()
     .isLength({ min: 4, max: 100 })
@@ -56,7 +59,6 @@ exports.log_in_post = [
           const tokenObject = util.issueJWT(existingUser);
           req.user = existingUser;
           const token = tokenObject.token.split(' ')[1]
-          console.log(token)
           res.cookie("token", token, {
             httpOnly: true,
             secure: false,

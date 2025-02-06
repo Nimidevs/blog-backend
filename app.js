@@ -17,7 +17,6 @@ var app = express();
 //Initialize the Database using the mongoDB ODM Mongoose
 mongoose.set("strictQuery", false);
 const mongoDB = process.env.DATABASE_URL;
-console.log(mongoDB);
 
 require("./config/passport")(passport);
 

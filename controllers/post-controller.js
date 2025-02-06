@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const { body, validationResult, Result } = require("express-validator");
 const Post = require("../models/post");
+const Reads = require("../models/read");
 const Category = require("../models/category");
 const {
   imageUploadFunction,
@@ -43,6 +44,11 @@ exports.postGet = asyncHandler(async (req, res, next) => {
         { path: "author", select: "first_name last_name" },
         { path: "categories", select: "name" },
       ]);
+      const readCount = new Reads({
+        postId: req.params.id,
+        created_at: Date.now(),
+      });
+      await readCount.save();
       return res.status(200).json({ success: true, post: updatedPost });
     } else {
       return res
@@ -125,8 +131,11 @@ exports.searchPostsGet = asyncHandler(async (req, res, next) => {
         filters.date.$lte = new Date(toDate);
       }
     }
-    const posts = await Post.find(filters);
-    if (!posts || posts.length < 1) {
+    const posts = await Post.find(filters).populate([
+      { path: "author", select: "first_name last_name" },
+      { path: "categories", select: "name" },
+    ]);
+    if (!posts) {
       return res
         .status(404)
         .json({ success: false, message: "couldnt find post" });
@@ -208,10 +217,12 @@ exports.categoriesPostsGet = asyncHandler(async (req, res, next) => {
     const posts = await Post.find({
       published: true,
       categories: req.params.categoryId,
-    }).populate([
-      { path: "author", select: "first_name last_name" },
-      { path: "categories", select: "name" },
-    ]).exec();
+    })
+      .populate([
+        { path: "author", select: "first_name last_name" },
+        { path: "categories", select: "name" },
+      ])
+      .exec();
     if (!posts) {
       return res.status(404).json({
         success: false,
@@ -546,6 +557,27 @@ exports.updatePostPost = [
     }
   }),
 ];
+exports.ReadersAllAuthorsPostsGet = asyncHandler(async (req, res, next) => {
+  try {
+    const authorsId = req.params.writerId;
+    const posts = await Post.find({
+      author: authorsId,
+      published: true,
+    }).populate([
+      { path: "author", select: "first_name last_name" },
+      { path: "categories", select: "name" },
+    ]);
+    if (!posts) {
+      res.status(404).json({ success: false, message: "No posts Found" });
+    }
+    res.status(200).json({ success: true, posts: posts });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong, Try again later",
+    });
+  }
+});
 exports.allAuthorsPostsGet = asyncHandler(async (req, res, next) => {
   try {
     const posts = await Post.find({ author: req.user._id });

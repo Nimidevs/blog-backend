@@ -7,8 +7,11 @@ const path = require("path");
 const User = require("../models/user");
 
 const authRoutes = require("./auth");
-const postsRoutes = require('./posts')
-const categoriesRoutes = require('./category')
+const postsRoutes = require("./posts");
+const categoriesRoutes = require("./category");
+const authorsRoutes = require("./author");
+const dailyUpdatesRoutes = require("./daily-update");
+const applicationRoutes = require("./application");
 const passport = require("passport");
 
 const pathToKey = path.join(__dirname, "..", "id_rsa_pub.pem");
@@ -19,8 +22,12 @@ const PUB_KEY = fs.readFileSync(pathToKey, "utf8");
 //   res.json({ message: "Index Route" });
 // });
 router.use("/auth", authRoutes);
-router.use('/posts', postsRoutes)
-router.use('/categories', categoriesRoutes)
+router.use("/posts", postsRoutes);
+router.use("/categories", categoriesRoutes);
+router.use("/authors", authorsRoutes);
+router.use("/daily-updates", dailyUpdatesRoutes);
+router.use("/applications", applicationRoutes);
+
 // router.get(
 //   "/protected",
 //   passport.authenticate("jwt", { session: false }),

@@ -40,7 +40,7 @@ exports.sign_up_post = [
           username: req.body.username,
         });
         if (existingUser) {
-          res
+          return res
             .status(409)
             .json({ message: "A user with this username exists" });
         }
